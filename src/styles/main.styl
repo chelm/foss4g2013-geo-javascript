@@ -2,11 +2,11 @@
 
 // variables!
 
-slide_width = 640px
-slide_height = 480px
+slide_width = 100%
+slide_height = 250px
 slide_background = #eaeaea
 
-slide_transition_length = .6s
+slide_transition_length = .3s
 slide_transition_easing = ease
 slide_transition_translate_x = 0
 slide_transition_rotate_y = 90deg
@@ -36,6 +36,9 @@ article
   transition: background slide_transition_length slide_transition_easing
   display: none
   &.bespoke-parent
+    background: radial-gradient(black 15%, transparent 16%) 0 0,radial-gradient(black 15%, transparent 16%) 8px 8px, radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 0 1px, radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 8px 9px
+    background-color: #282828
+    background-size: 16px 16px
     display: block
     position: absolute
     top: 0

@@ -2,6 +2,7 @@
   "name": "javascript-is-winning-bespoke",
   "version": "0.0.0",
   "dependencies": {
+    "jquery": "*",
     "bespoke.js": "~0.3.0",
     "bespoke-bullets": "~0.2.0",
     "bespoke-hash": "~0.1.0",
