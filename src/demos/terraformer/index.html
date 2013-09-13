@@ -60,8 +60,12 @@
         display:none;
       }
 
+      #histogram-title {
+        margin-left:10px;
+      }
+
       .histogram-svg {
-        margin-top: 25px;
+        margin-top: 10px;
         margin-right: 0px;
         margin-bottom: 10px;
         margin-left: 0px;
@@ -102,6 +106,9 @@
         line-height:25px;
       }
 
+      .axis text {
+        font-size: 9px;
+      }
     </style>
   </head>
   <body>
@@ -129,7 +136,9 @@
         <div id="legend" class="pull-right" style="display:none;"></div>
       </div>
       <div class="container col-md-8" id="mapwrap">
-        <div id="histogram"></div>
+        <div id="histogram">
+          <div id="histogram-title">Count of by </div>
+        </div>
         <div id="map"></div>
 
       </div>
@@ -150,7 +159,8 @@
       , width = parseInt(d3.select('#mapwrap').style('width'))
       , width = width - margin.left - margin.right
       , mapRatio = .5
-      , height = width * mapRatio;
+      , height = width * mapRatio
+      , title;
 
     // geo store 
     var CountyGeoStore= new Terraformer.GeoStore({
@@ -229,6 +239,7 @@
 
     d3.select('#agg').on('click', function(){
       var value = d3.select('#path')[0][0].value || 'chelm/geodata/walmarts';
+      title = value;
       load(value);
     });
 
@@ -260,6 +271,7 @@
 
     d3.select('#samples').on('change', function(e, el){
       load(this.options[this.selectedIndex].value);
+      title = this.options[this.selectedIndex].value;
     });
 
     d3.select(window).on('resize', resize);
