@@ -48,6 +48,41 @@
         fill: rgb(12, 44, 132);         
       }
 
+      #histogram {
+        position: absolute;
+        height: 140px;
+        width: 355px;
+        float: left;
+        box-shadow: 0px 1px 4px -1px #444;
+        margin: 3px;
+        right: 20px;
+        bottom: 20px;
+        display:none;
+      }
+
+      .histogram-svg {
+        margin-top: 25px;
+        margin-right: 0px;
+        margin-bottom: 10px;
+        margin-left: 0px;
+      }
+
+      .bar {
+        border: 0px solid #777;
+        fill: #0079c1;
+        float: left;
+        position: relative;
+      }
+
+      .filter-brush {
+        stroke: #fff;
+        fill-opacity: .125;
+        shape-rendering: crispEdges;
+      }
+
+      .hidden {
+        fill:none;
+      }
 
     </style>
   </head>
@@ -72,10 +107,12 @@
         <hr>
       </div>
       <div class="container col-md-8" id="mapwrap">
+        <div id="histogram"></div>
         <div id="map"></div>
       </div>
       <h1 id="count"></h1>
     </div>
+  <script src="js/filters.js"></script>
   <script src="js/terraformer.js"></script>
   <script src="js/geostore.js"></script>
   <script src="js/rtree.js"></script>
@@ -203,11 +240,18 @@
             //console.log('CONTAINS', r.id);
             if (!aggregation[r.id]) aggregation[r.id] = 1;
             else aggregation[r.id]++;
-            d3.select('#county_'+r.id).attr('data-class', classify( aggregation[r.id] ));
-            //console.log(r.id, d3.select('#county_'+r.id).attr('data-a));
+
+            d3.select('#county_'+r.id)
+              .attr('data-class', classify( aggregation[r.id] ))
+              .attr('class', 'counties counties_'+classify( aggregation[r.id] ).replace(/class/g, '') );
+          
           });
         } 
+
       });
+
+      updateFilter( aggregation );
+      
     }
 
     function zoomed() {
