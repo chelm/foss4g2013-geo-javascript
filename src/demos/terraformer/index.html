@@ -68,8 +68,8 @@
 
     var svg = d3.select("#map").append("svg")
     
-    d3.json("data/us.json", function(error, us) {
-    
+    d3.json("data/us-simple.json", function(error, us) {
+      console.log('us', us)
       svg.append("g")
           .attr("class", "counties")
         .selectAll("path")
