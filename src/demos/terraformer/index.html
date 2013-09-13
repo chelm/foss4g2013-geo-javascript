@@ -58,7 +58,15 @@
           <div class="span9">
             <h1>Javascript Aggregation</h1>
             <p>This demo can aggregate any set of points hosted on github (as geojson) into US Counties. It uses a Terraformer GeoStore to spatially index polygons and aggregate data. Enter a url to a geojson file below to see it aggregated.</p> 
-            <input id="path" type="text" style="margin:0px;" placeholder="user/repo/data.geojson"><button type="button" class="btn btn-default" id="agg">Aggregate</button>
+            <input id="path" type="text" value="chelm/geodata/walmarts" style="margin:0px;" placeholder="user/repo/data.geojson"><button type="button" class="btn btn-default" id="agg">Aggregate</button>
+            <select id="samples" class="form-control" style="margin:0px">
+              <option selected>Samples</option>
+              <option value="chelm/geodata/snow">chelm/geodata/snow</option>
+              <option value="chelm/geodata/ski_areas">chelm/geodata/ski_areas</option>
+              <option value="chelm/geodata/dunkin_donuts">chelm/geodata/dunkin_donuts</option>
+              <option value="benheb/geodata/colorado-rain-totals">benheb/geodata/colorado-rain-totals</option>
+            </select>
+
           </div>
         </header>
         <hr>
@@ -72,7 +80,7 @@
   <script src="js/geostore.js"></script>
   <script src="js/rtree.js"></script>
   <script src="js/Memory.js"></script>
-  <script src="js/underscore-min.js"></script>
+  <!--script src="js/underscore-min.js"></script-->
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
   <script>
@@ -120,7 +128,6 @@
       .call( zoom );
     
     d3.json("data/us-simple.json", function(error, us) {
-      console.log('us', us)
       svg.append("g")
         .selectAll("path")
           .data(topojson.feature(us, us.objects.states).features)
@@ -147,10 +154,13 @@
 
     d3.select('#agg').on('click', function(){
       var value = d3.select('#path')[0][0].value || 'chelm/geodata/walmarts';
+      load(value);
+    });
+
+    function load( value ){
+      console.log(value);
       clear();
-      d3.xhr('http://koop.herokuapp.com/github/'+value, function(error, response){
-      //d3.xhr('http://koop.dc.esri.com/github/'+value, function(error, response){
-      //d3.xhr('http://localhost:1337/github/'+value, function(error, response){
+      d3.xhr('https://koop.dc.esri.com/github/'+value, function(error, response){
         var data = JSON.parse(response.responseText)[0];
         d3.select('#count').html( data.features.length + ' features');
         data.features.forEach(function(f){
@@ -158,10 +168,11 @@
             aggregatePoint(f);
           }
         });
-        /*console.log(_.values(aggregation).sort(function(a,b){
-          return a - b;
-        }));*/
       });
+    }
+
+    d3.select('#samples').on('change', function(e, el){
+      load(this.options[this.selectedIndex].value);
     });
 
     d3.select(window).on('resize', resize);
