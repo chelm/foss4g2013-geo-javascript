@@ -89,6 +89,13 @@
         font-weight: 300;
         text-indent: 2px;
       }
+      .legend{
+        width:200px;
+      }
+      .legend div {
+        float:right;
+        width:40px;
+      }
 
     </style>
   </head>
@@ -108,16 +115,18 @@
                 <option value="chelm/geodata/dunkin_donuts">chelm/geodata/dunkin_donuts</option>
                 <option value="benheb/geodata/colorado-rain-totals">benheb/geodata/colorado-rain-totals</option>
               </select>
-              <button type="button" class="btn btn-default pull-right" id="socket" style="">WebSocket</button>
+              <!--button type="button" class="btn btn-default pull-right" id="socket" style="">WebSocket</button-->
             </div>
           </div>
         </header>
         <hr>
         <span style="display:none;" class="big" id="progress"> Loading... </span>
+        <div id="legend" style="display:none;"></div>
       </div>
       <div class="container col-md-8" id="mapwrap">
         <div id="histogram"></div>
         <div id="map"></div>
+
       </div>
       <hr>
       <h1 id="count"></h1>
