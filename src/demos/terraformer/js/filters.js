@@ -52,6 +52,12 @@ function updateFilter ( aggregation ) {
       .on( "brush", brushed );
   
   document.getElementById('histogram').style.display = "block";
+  document.getElementById('histogram-title').innerHTML = "";
+
+  var t = title.split('/');
+  t = "Count of <b>" + t[ t.length - 1 ] + "</b> by U.S. county";
+  document.getElementById('histogram-title').innerHTML = t;
+  
   d3.select('.histogram-svg').remove();
 
   var svg = d3.select('#histogram').append("svg")
