@@ -20,6 +20,34 @@
         stroke-width:0.5px;
       }
 
+      .states {
+        stroke-width:1px;
+      }
+
+      path[data-class = "class0"]{
+        fill: rgb(255, 255, 204);         
+      } 
+
+      path[data-class = "class1"]{
+        fill: rgb(199, 233, 180);         
+      }
+
+      path[data-class = "class2"]{
+        fill: rgb(65, 182, 196);         
+      }
+
+      path[data-class = "class3"]{
+        fill: rgb(29, 145, 192);     
+      }
+    
+      path[data-class = "class4"]{
+        fill: rgb(34, 94, 168);         
+      }
+
+      path[data-class = "class5"]{
+        fill: rgb(12, 44, 132);         
+      }
+
 
     </style>
   </head>
@@ -34,31 +62,47 @@
         </header>
         <hr>
       </div>
-      <div class="container">
-        <h1 id="count"></h1>
-        <div class="row">
-          <div class="span12">
-            <div id="map"></div>
-          </div>
-        </div>
+      <div class="container col-md-8" id="mapwrap">
+        <div id="map"></div>
       </div>
+      <h1 id="count"></h1>
     </div>
+  <script src="js/terraformer.js"></script>
+  <script src="js/geostore.js"></script>
+  <script src="js/rtree.js"></script>
+  <script src="js/Memory.js"></script>
+  <script src="js/underscore-min.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
   <script>
 
-    /*var width = 960,
-        height = 500;*/
-
     var margin = {top: 10, left: 10, bottom: 10, right: 10}
-      , width = parseInt(d3.select('#map').style('width'))
+      , width = parseInt(d3.select('#mapwrap').style('width'))
       , width = width - margin.left - margin.right
       , mapRatio = .5
       , height = width * mapRatio;
+
+    // geo store 
+    var CountyGeoStore= new Terraformer.GeoStore({
+      store: new Terraformer.Store.Memory(),
+      index: new Terraformer.RTree()
+    });
+
+    var aggregation = {};
+
+    var area = 1, simplify = d3.geo.transform({
+      point: function(x, y, z) {
+        if (z >= area) this.stream.point(x, y);
+      }
+    });
     
     var fill = d3.scale.log()
         .domain([10, 500])
         .range(["brown", "steelblue"]);
+
+    var classify = d3.scale.quantile()
+        .domain([1, 20])
+        .range(["class0", "class1", "class2", "class3", "class4", "class5"]);
 
     var projection = d3.geo.albersUsa()
       .scale(width)
@@ -66,55 +110,84 @@
     
     var path = d3.geo.path().projection(projection);
 
-    var svg = d3.select("#map").append("svg")
+    var svg = d3.select("#mapwrap").append("svg")
     
     d3.json("data/us.json", function(error, us) {
     
       svg.append("g")
-          .attr("class", "counties")
         .selectAll("path")
-          .data(topojson.feature(us, us.objects.counties).features)
+          .data(topojson.feature(us, us.objects.states).features)
         .enter().append("path")
-          .attr("d", function(d) { return path(d); });
-          //.style("fill", function(d) { console.log(d); return 'none'; });
+          .attr("d", function(d) { return path(d); })
+          .attr("class", "states");
+
+      var counties = topojson.feature(us, us.objects.counties).features;
+
+      svg.append("g")
+        .selectAll("path")
+          .data(counties)
+        .enter().append("path")
+          .attr("id", function(d) { return 'county_'+d.id; })
+          .attr("d", function(d) { CountyGeoStore.add(d); return path(d); })
+          .attr("class", "counties");
     
       /*svg.append("path")
-          .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
-          .attr("class", "states")
-          .attr("d", path);*/
+          .datum(topojson.mesh(us, us.objects.counties, function(a, b) { return a.id !== b.id; }))
+          .attr("class", "counties")
+          .attr("d", function(d) {  console.log(d); return path(d); });*/
+
     });
 
-    d3.select(window).on('resize', resize);
     d3.select('#agg').on('click', function(){
-      var value = d3.select('path').attr('value') || 'chelm/grunt-geo/forks';
+      var value = d3.select('#path')[0][0].value || 'chelm/geodata/walmarts.geojson';
+      clear();
       d3.xhr('http://localhost:1337/github/'+value, function(error, response){
         var data = JSON.parse(response.responseText)[0];
         d3.select('#count').html( data.features.length + ' features');
+        data.features.forEach(function(f){
+          if (f.geometry.type == 'Point'){
+            aggregatePoint(f);
+          }
+        });
+        console.log(_.values(aggregation).sort(function(a,b){
+          return a - b;
+        }));
       });
     });
 
+    d3.select(window).on('resize', resize);
     function resize() {
-        // adjust things when the window size changes
-        width = parseInt(d3.select('#map').style('width'));
-        //width = width - margin.left - margin.right;
+        width = parseInt(d3.select('#mapwrap').style('width'));
         height = width * mapRatio;
-
-        console.log(width);
-    
         // update projection
         projection
             .translate([width / 2, height / 2])
             .scale(width);
-    
-        // resize the map container
-        d3.select('#map')
-          .style('width', width+'px' )
-          .style('height', height+'px' );
-
-    
         // resize the map
-        d3.select('path').attr('d', path);
-        //map.selectAll('.state').attr('d', path);
+        d3.selectAll('.counties').attr('d', path);
+        d3.selectAll('.states').attr('d', path);
+    }
+
+    function clear(){
+      aggregation = {};
+      d3.selectAll('.counties').attr('data-class', 'none');
+    }
+
+    function aggregatePoint( point ){
+      CountyGeoStore.contains({
+        type: "Point",
+        coordinates: point.geometry.coordinates
+      }, function(err, results){
+        if (results.length){
+          results.forEach(function(r){
+            //console.log('CONTAINS', r.id);
+            if (!aggregation[r.id]) aggregation[r.id] = 1;
+            else aggregation[r.id]++;
+            d3.select('#county_'+r.id).attr('data-class', classify( aggregation[r.id] ));
+            //console.log(r.id, d3.select('#county_'+r.id).attr('data-a));
+          });
+        } 
+      });
     }
 
 
