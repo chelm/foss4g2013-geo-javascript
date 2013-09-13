@@ -142,7 +142,8 @@
     d3.select('#agg').on('click', function(){
       var value = d3.select('#path')[0][0].value || 'chelm/geodata/walmarts';
       clear();
-      d3.xhr('http://koop.dc.esri.com/github/'+value, function(error, response){
+      d3.xhr('http://koop.herokuapp.com/github/'+value, function(error, response){
+      //d3.xhr('http://koop.dc.esri.com/github/'+value, function(error, response){
       //d3.xhr('http://localhost:1337/github/'+value, function(error, response){
         var data = JSON.parse(response.responseText)[0];
         d3.select('#count').html( data.features.length + ' features');
