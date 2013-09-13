@@ -89,12 +89,17 @@
         font-weight: 300;
         text-indent: 2px;
       }
-      .legend{
+      #legend{
         width:200px;
+        text-align: center;
+        color: #fff;
+        text-shadow:0px 0px 1px #000;
       }
-      .legend div {
+      #legend div {
         float:right;
         width:40px;
+        height: 25px;
+        line-height:25px;
       }
 
     </style>
@@ -120,8 +125,8 @@
           </div>
         </header>
         <hr>
-        <span style="display:none;" class="big" id="progress"> Loading... </span>
-        <div id="legend" style="display:none;"></div>
+        <span style="" class="big" id="progress"> </span>
+        <div id="legend" class="pull-right" style="display:none;"></div>
       </div>
       <div class="container col-md-8" id="mapwrap">
         <div id="histogram"></div>
@@ -165,23 +170,36 @@
         .domain([10, 500])
         .range(["brown", "steelblue"]);
 
+    var colors = d3.scale.quantile()
+        .domain([1, 20])
+        .range([ "rgb(255, 255, 204)", "rgb(199, 233, 180)", "rgb(65, 182, 196)", "rgb(29, 145, 192)", "rgb(34, 94, 168)", "rgb(12, 44, 132)"]);
+
+
     var classify = d3.scale.quantile()
         .domain([1, 20])
         .range(["class0", "class1", "class2", "class3", "class4", "class5"]);
+
+    // build zoom 
+    colors.quantiles().forEach(function(f){
+      d3.select('#legend')
+        .append('div')
+        .text(Math.round(f))
+        .style('background', colors(Math.round(f))); 
+    });
 
     var projection = d3.geo.albersUsa()
       .scale(width)
       .translate([width / 2, height / 2]);
 
-    var zoom = d3.behavior.zoom(true)
+    /*var zoom = d3.behavior.zoom(true)
       .scale(projection.scale())
       .scaleExtent([100, 2000])
-      .on("zoom", zoomed);
+      .on("zoom", zoomed);*/
     
     var path = d3.geo.path().projection(projection);
 
     var svg = d3.select("#mapwrap").append("svg")
-      .call( zoom );
+      //.call( zoom );
     
     d3.json("data/us-simple.json", function(error, us) {
       svg.append("g")
@@ -218,16 +236,26 @@
       clear();
       d3.select('#progress').style('display', 'block');
       d3.xhr('https://koop.dc.esri.com/github/'+value, function(error, response){
-        var data = JSON.parse(response.responseText)[0];
+        d3.select('#legend').style('display', 'block');
+        data = JSON.parse(response.responseText)[0];
         d3.select('#count').html( data.features.length + ' features');
         data.features.forEach(function(f,i){
-          d3.select('#progress').html('Proccessing '+(i+1)+'/'+data.features.length);
-          if (f.geometry.type == 'Point'){
-            aggregatePoint(f);
-          }
+          process(f,i);
         });
-        d3.select('#progress').html('Complete!');
       });
+    }
+
+    function process(f,i){
+      setTimeout(function(){
+        d3.select('#progress').html('Proccessing '+(i+1)+'/'+data.features.length);
+        if (f.geometry.type == 'Point'){
+          aggregatePoint(f);
+        }
+      },10);
+
+      if (i == data.features.length-1) { 
+        d3.select('#progress').html('Complete!');
+      }
     }
 
     d3.select('#samples').on('change', function(e, el){
@@ -250,6 +278,7 @@
     function clear(){
       aggregation = {};
       d3.select('#progress').html('Loading...');
+      d3.select('#legend').style('display', 'none');
       d3.selectAll('.counties').attr('data-class', 'none');
     }
 
