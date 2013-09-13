@@ -48,19 +48,67 @@
         fill: rgb(12, 44, 132);         
       }
 
+      #histogram {
+        position: absolute;
+        height: 140px;
+        width: 355px;
+        float: left;
+        box-shadow: 0px 1px 4px -1px #444;
+        margin: 3px;
+        right: 20px;
+        bottom: 20px;
+        display:none;
+      }
+
+      #histogram-title {
+        margin-left:10px;
+      }
+
+      .histogram-svg {
+        margin-top: 10px;
+        margin-right: 0px;
+        margin-bottom: 10px;
+        margin-left: 0px;
+      }
+
+      .bar {
+        border: 0px solid #777;
+        fill: #0079c1;
+        float: left;
+        position: relative;
+      }
+
+      .filter-brush {
+        stroke: #fff;
+        fill-opacity: .125;
+        shape-rendering: crispEdges;
+      }
+
+      .hidden {
+        fill:none;
+      }
+      
       .big {
         font-size: 36px;
         font-weight: 300;
         text-indent: 2px;
       }
-      .legend{
+      #legend{
         width:200px;
+        text-align: center;
+        color: #fff;
+        text-shadow:0px 0px 1px #000;
       }
-      .legend div {
+      #legend div {
         float:right;
         width:40px;
+        height: 25px;
+        line-height:25px;
       }
 
+      .axis text {
+        font-size: 9px;
+      }
     </style>
   </head>
   <body>
@@ -84,14 +132,20 @@
           </div>
         </header>
         <hr>
-        <span style="display:none;" class="big" id="progress"> Loading... </span>
-        <div id="legend" style="display:none;"></div>
+        <span style="" class="big" id="progress"> </span>
+        <div id="legend" class="pull-right" style="display:none;"></div>
       </div>
       <div class="container col-md-8" id="mapwrap">
+        <div id="histogram">
+          <div id="histogram-title">Count of by </div>
+        </div>
+        <div id="map"></div>
+
       </div>
       <hr>
       <h1 id="count"></h1>
     </div>
+  <script src="js/filters.js"></script>
   <script src="js/terraformer.js"></script>
   <script src="js/geostore.js"></script>
   <script src="js/rtree.js"></script>
@@ -105,7 +159,8 @@
       , width = parseInt(d3.select('#mapwrap').style('width'))
       , width = width - margin.left - margin.right
       , mapRatio = .5
-      , height = width * mapRatio;
+      , height = width * mapRatio
+      , title;
 
     // geo store 
     var CountyGeoStore= new Terraformer.GeoStore({
@@ -125,17 +180,36 @@
         .domain([10, 500])
         .range(["brown", "steelblue"]);
 
+    var colors = d3.scale.quantile()
+        .domain([1, 20])
+        .range([ "rgb(255, 255, 204)", "rgb(199, 233, 180)", "rgb(65, 182, 196)", "rgb(29, 145, 192)", "rgb(34, 94, 168)", "rgb(12, 44, 132)"]);
+
+
     var classify = d3.scale.quantile()
         .domain([1, 20])
         .range(["class0", "class1", "class2", "class3", "class4", "class5"]);
 
+    // build zoom 
+    colors.quantiles().forEach(function(f){
+      d3.select('#legend')
+        .append('div')
+        .text(Math.round(f))
+        .style('background', colors(Math.round(f))); 
+    });
+
     var projection = d3.geo.albersUsa()
       .scale(width)
       .translate([width / 2, height / 2]);
+
+    /*var zoom = d3.behavior.zoom(true)
+      .scale(projection.scale())
+      .scaleExtent([100, 2000])
+      .on("zoom", zoomed);*/
     
     var path = d3.geo.path().projection(projection);
 
     var svg = d3.select("#mapwrap").append("svg")
+      //.call( zoom );
     
     d3.json("data/us-simple.json", function(error, us) {
       svg.append("g")
@@ -165,6 +239,7 @@
 
     d3.select('#agg').on('click', function(){
       var value = d3.select('#path')[0][0].value || 'chelm/geodata/walmarts';
+      title = value;
       load(value);
     });
 
@@ -172,20 +247,31 @@
       clear();
       d3.select('#progress').style('display', 'block');
       d3.xhr('https://koop.dc.esri.com/github/'+value, function(error, response){
-        var data = JSON.parse(response.responseText)[0];
+        d3.select('#legend').style('display', 'block');
+        data = JSON.parse(response.responseText)[0];
         d3.select('#count').html( data.features.length + ' features');
         data.features.forEach(function(f,i){
-          d3.select('#progress').html('Proccessing '+(i+1)+'/'+data.features.length);
-          if (f.geometry.type == 'Point'){
-            aggregatePoint(f);
-          }
+          process(f,i);
         });
-        d3.select('#progress').html('Complete!');
       });
+    }
+
+    function process(f,i){
+      setTimeout(function(){
+        d3.select('#progress').html('Proccessing '+(i+1)+'/'+data.features.length);
+        if (f.geometry.type == 'Point'){
+          aggregatePoint(f);
+        }
+      },10);
+
+      if (i == data.features.length-1) { 
+        d3.select('#progress').html('Complete!');
+      }
     }
 
     d3.select('#samples').on('change', function(e, el){
       load(this.options[this.selectedIndex].value);
+      title = this.options[this.selectedIndex].value;
     });
 
     d3.select(window).on('resize', resize);
@@ -204,6 +290,7 @@
     function clear(){
       aggregation = {};
       d3.select('#progress').html('Loading...');
+      d3.select('#legend').style('display', 'none');
       d3.selectAll('.counties').attr('data-class', 'none');
     }
 
@@ -217,11 +304,28 @@
             //console.log('CONTAINS', r.id);
             if (!aggregation[r.id]) aggregation[r.id] = 1;
             else aggregation[r.id]++;
-            d3.select('#county_'+r.id).attr('data-class', classify( aggregation[r.id] ));
-            //console.log(r.id, d3.select('#county_'+r.id).attr('data-a));
+
+            d3.select('#county_'+r.id)
+              .attr('data-class', classify( aggregation[r.id] ))
+              .attr('class', 'counties counties_'+classify( aggregation[r.id] ).replace(/class/g, '') );
+          
           });
         } 
+
       });
+
+      updateFilter( aggregation );
+      
+    }
+
+    function zoomed() {
+      if(d3.event){
+        var scale = d3.event.scale;
+        projection.scale(scale);
+        
+        d3.selectAll('path').attr('d', path);
+        
+      }
     }
 
     function doSocket(){
