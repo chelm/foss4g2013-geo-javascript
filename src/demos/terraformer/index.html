@@ -48,6 +48,11 @@
         fill: rgb(12, 44, 132);         
       }
 
+      .big {
+        font-size: 36px;
+        font-weight: 300;
+        text-indent: 2px;
+      }
 
     </style>
   </head>
@@ -57,23 +62,27 @@
         <header class="header row">
           <div class="span9">
             <h1>Javascript Aggregation</h1>
-            <p>This demo can aggregate any set of points hosted on github (as geojson) into US Counties. It uses a Terraformer GeoStore to spatially index polygons and aggregate data. Enter a url to a geojson file below to see it aggregated.</p> 
-            <input id="path" type="text" value="chelm/geodata/walmarts" style="margin:0px;" placeholder="user/repo/data.geojson"><button type="button" class="btn btn-default" id="agg">Aggregate</button>
-            <select id="samples" class="form-control" style="margin:0px">
-              <option selected>Samples</option>
-              <option value="chelm/geodata/snow">chelm/geodata/snow</option>
-              <option value="chelm/geodata/ski_areas">chelm/geodata/ski_areas</option>
-              <option value="chelm/geodata/dunkin_donuts">chelm/geodata/dunkin_donuts</option>
-              <option value="benheb/geodata/colorado-rain-totals">benheb/geodata/colorado-rain-totals</option>
-            </select>
-
+            <p>This demo can aggregate any set of points hosted on github (as geojson) into US Counties. It uses a Terraformer GeoStore to spatially index polygons and aggregate data. Enter a url to a geojson file below to see it aggregated.</p>
+            <div class="row"> 
+              <input id="path" type="text" value="chelm/geodata/walmarts" style="margin:0px;" placeholder="user/repo/data.geojson"><button type="button" class="btn btn-default" id="agg">Aggregate</button>
+              <select id="samples" class="form-control" style="margin:0px 10px">
+                <option selected>Samples</option>
+                <option value="chelm/geodata/snow">chelm/geodata/snow</option>
+                <option value="chelm/geodata/ski_areas">chelm/geodata/ski_areas</option>
+                <option value="chelm/geodata/dunkin_donuts">chelm/geodata/dunkin_donuts</option>
+                <option value="benheb/geodata/colorado-rain-totals">benheb/geodata/colorado-rain-totals</option>
+              </select>
+              <button type="button" class="btn btn-default pull-right" id="socket" style="">WebSocket</button>
+            </div>
           </div>
         </header>
         <hr>
+        <span style="display:none;" class="big" id="progress"> Loading... </span>
       </div>
       <div class="container col-md-8" id="mapwrap">
         <div id="map"></div>
       </div>
+      <hr>
       <h1 id="count"></h1>
     </div>
   <script src="js/terraformer.js"></script>
@@ -132,6 +141,7 @@
       var counties = topojson.feature(us, us.objects.counties).features;
 
       svg.append("g")
+          .attr('class', 'allcounties')
         .selectAll("path")
           .data(counties)
         .enter().append("path")
@@ -152,16 +162,18 @@
     });
 
     function load( value ){
-      console.log(value);
       clear();
+      d3.select('#progress').style('display', 'block');
       d3.xhr('https://koop.dc.esri.com/github/'+value, function(error, response){
         var data = JSON.parse(response.responseText)[0];
         d3.select('#count').html( data.features.length + ' features');
-        data.features.forEach(function(f){
+        data.features.forEach(function(f,i){
+          d3.select('#progress').html('Proccessing '+(i+1)+'/'+data.features.length);
           if (f.geometry.type == 'Point'){
             aggregatePoint(f);
           }
         });
+        d3.select('#progress').html('Complete!');
       });
     }
 
@@ -184,6 +196,7 @@
 
     function clear(){
       aggregation = {};
+      d3.select('#progress').html('Loading...');
       d3.selectAll('.counties').attr('data-class', 'none');
     }
 
@@ -203,6 +216,40 @@
         } 
       });
     }
+
+    function doSocket(){
+      clear();
+      var now = new Date().getTime();
+      var postData = JSON.stringify({"serviceName":"tweets_"+now,"type":"StreamServer","description":"Tweets that mention ... beep boop","extent":{"rings":[[]],"spatialReference":{"wkid":4326}},"spatialReference":{"wkid":4326},"datastore":null,"fields":[{"name":"fid","type":"esriFieldTypeOID","alias":"fid"},{"name":"id","type":"esriFieldTypeInteger","alias":"id"}, {"name":"id_str","type":"esriFieldTypeString","alias":"id_str"},{"name":"user_id_str","type":"esriFieldTypeString","alias":"userid"},{"name":"user_name","type":   "esriFieldTypeString","alias":"user_name"},{"name":"text","type":"esriFieldTypeString","alias":"text"},{"name":"posted_time","type":"esriFieldTypeDate","alias":"posted_time"},     {"name":"created_at","type":"esriFieldTypeString","alias":"created_at"},{"name":"user_friends","type":"esriFieldTypeSmallInteger","alias":"friends"},{"name":"user_followers",      "type":"esriFieldTypeSmallInteger","alias":"followers"},{"name":"retweeted","type":"esriFieldTypeSmallInteger","alias":"retweeted"},{"name":"retweet_count","type":                 "esriFieldTypeSmallInteger","alias":"retweet_count"},{"name":"stream_id","type":"esriFieldTypeString","alias":"stream_id"},{"name":"place_id","type":"esriFieldTypeString","alias": "place_id"},{"name":"place_fullname","type":"esriFieldTypeString","alias":"place_fullname"}],"uniqueIdField":"id","entityIdField":null,"timestampField":"posted_time"});
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState==4) {
+          var data = JSON.parse(xmlhttp.responseText);
+          console.log(data.service.webSocketUrl);
+          ws = new WebSocket(data.service.webSocketUrl);
+          ws.onopen = function(m){
+            alert('open');
+          };
+          ws.onmessage = function(m){
+            console.log('wtf');
+          };
+        }
+      };
+      xmlhttp.open("POST","http://socialdemo.dc.esri.com/admin/services",true);
+      xmlhttp.setRequestHeader("Content-type","application/json");
+      xmlhttp.send(postData);
+
+      /*var g = d3.select('.allcounties');
+      g.transition().duration(750).attr("transform", "translate(" + projection.translate() + ")"
+      + "scale(" + .95 / Math.max((-72 - -75) / width, (45 - 40) / height) + ")"
+      + "translate(" + -(-72 + -75) / 2 + "," + -(45 - 40) / 2 + ")");*/
+    }
+    d3.select('#socket').on('click', doSocket);
+
+    function reset() {
+      d3.select('.allcounties').transition().duration(750).attr("transform", "");
+    }
+
 
 
     
