@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Terraformer Demo</title>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lato:100,300,400,700">
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style>
+
+      path {
+        fill: none;
+        stroke: #555;
+        stroke-linejoin: round;
+        stroke-width:0.5px;
+      }
+
+
+    </style>
+  </head>
+  <body>
+  <div class="wrapper">
+      <div class="container">
+        <header class="header row">
+          <div class="span9">
+            <h1>Javascript Aggregation</h1>
+            <input id="path" type="text" style="margin:0px;" placeholder="user/repo/data.geojson"><button type="button" class="btn btn-default" id="agg">Aggregate</button>
+          </div>
+        </header>
+        <hr>
+      </div>
+      <div class="container">
+        <h1 id="count"></h1>
+        <div class="row">
+          <div class="span12">
+            <div id="map"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script>
+
+    /*var width = 960,
+        height = 500;*/
+
+    var margin = {top: 10, left: 10, bottom: 10, right: 10}
+      , width = parseInt(d3.select('#map').style('width'))
+      , width = width - margin.left - margin.right
+      , mapRatio = .5
+      , height = width * mapRatio;
+    
+    var fill = d3.scale.log()
+        .domain([10, 500])
+        .range(["brown", "steelblue"]);
+
+    var projection = d3.geo.albersUsa()
+      .scale(width)
+      .translate([width / 2, height / 2]);
+    
+    var path = d3.geo.path().projection(projection);
+
+    var svg = d3.select("#map").append("svg")
+    
+    d3.json("data/us.json", function(error, us) {
+    
+      svg.append("g")
+          .attr("class", "counties")
+        .selectAll("path")
+          .data(topojson.feature(us, us.objects.counties).features)
+        .enter().append("path")
+          .attr("d", function(d) { return path(d); });
+          //.style("fill", function(d) { console.log(d); return 'none'; });
+    
+      /*svg.append("path")
+          .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
+          .attr("class", "states")
+          .attr("d", path);*/
+    });
+
+    d3.select(window).on('resize', resize);
+    d3.select('#agg').on('click', function(){
+      var value = d3.select('path').attr('value') || 'chelm/grunt-geo/forks';
+      d3.xhr('http://localhost:1337/github/'+value, function(error, response){
+        var data = JSON.parse(response.responseText)[0];
+        d3.select('#count').html( data.features.length + ' features');
+      });
+    });
+
+    function resize() {
+        // adjust things when the window size changes
+        width = parseInt(d3.select('#map').style('width'));
+        //width = width - margin.left - margin.right;
+        height = width * mapRatio;
+
+        console.log(width);
+    
+        // update projection
+        projection
+            .translate([width / 2, height / 2])
+            .scale(width);
+    
+        // resize the map container
+        d3.select('#map')
+          .style('width', width+'px' )
+          .style('height', height+'px' );
+
+    
+        // resize the map
+        d3.select('path').attr('d', path);
+        //map.selectAll('.state').attr('d', path);
+    }
+
+
+    
+  </script>
+  </body>
+</html>
