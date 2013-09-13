@@ -108,10 +108,16 @@
     var projection = d3.geo.albersUsa()
       .scale(width)
       .translate([width / 2, height / 2]);
+
+    var zoom = d3.behavior.zoom(true)
+      .scale(projection.scale())
+      .scaleExtent([100, 2000])
+      .on("zoom", zoomed);
     
     var path = d3.geo.path().projection(projection);
 
     var svg = d3.select("#mapwrap").append("svg")
+      .call( zoom );
     
     d3.json("data/us-simple.json", function(error, us) {
       console.log('us', us)
@@ -191,6 +197,16 @@
           });
         } 
       });
+    }
+
+    function zoomed() {
+      if(d3.event){
+        var scale = d3.event.scale;
+        projection.scale(scale);
+        
+        d3.selectAll('path').attr('d', path);
+        
+      }
     }
 
 
