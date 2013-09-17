@@ -143,8 +143,6 @@
         <div id="map"></div>
 
       </div>
-      <hr>
-      <h1 id="count"></h1>
     </div>
   <script src="js/filters.js"></script>
   <script src="js/terraformer.js"></script>
@@ -263,7 +261,7 @@
     }
 
     function loop( data ){
-      d3.select('#count').html( data.features.length + ' features');
+      //d3.select('#count').html( data.features.length + ' features');
       data.features.forEach(function(f,i){
         process(f,i);
       });
