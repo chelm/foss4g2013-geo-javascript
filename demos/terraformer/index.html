@@ -136,14 +136,13 @@
         <div id="legend" class="pull-right" style="display:none;"></div>
       </div>
       <div class="container col-md-8" id="mapwrap">
+        <div id="feature-info"></div>
         <div id="histogram">
           <div id="histogram-title">Count of by </div>
         </div>
         <div id="map"></div>
 
       </div>
-      <hr>
-      <h1 id="count"></h1>
     </div>
   <script src="js/filters.js"></script>
   <script src="js/terraformer.js"></script>
@@ -168,7 +167,8 @@
       index: new Terraformer.RTree()
     });
 
-    var aggregation = {};
+    var aggregation = {},
+      max = 0;
 
     var area = 1, simplify = d3.geo.transform({
       point: function(x, y, z) {
@@ -186,7 +186,7 @@
 
 
     var classify = d3.scale.quantile()
-        .domain([1, 20])
+        .domain([1, 10])
         .range(["class0", "class1", "class2", "class3", "class4", "class5"]);
 
     // build zoom 
@@ -227,6 +227,7 @@
           .data(counties)
         .enter().append("path")
           .attr("id", function(d) { return 'county_'+d.id; })
+          .attr("data-name", function(d) { return 'county_'+d.id; })
           .attr("d", function(d) { CountyGeoStore.add(d); return path(d); })
           .attr("class", "counties");
     
@@ -240,19 +241,29 @@
     d3.select('#agg').on('click', function(){
       var value = d3.select('#path')[0][0].value || 'chelm/geodata/walmarts';
       title = value;
-      load(value);
+      load(value, false);
     });
 
-    function load( value ){
+    function load( value, cache ){
       clear();
       d3.select('#progress').style('display', 'block');
-      d3.xhr('https://koop.dc.esri.com/github/'+value, function(error, response){
-        d3.select('#legend').style('display', 'block');
-        data = JSON.parse(response.responseText)[0];
-        d3.select('#count').html( data.features.length + ' features');
-        data.features.forEach(function(f,i){
-          process(f,i);
+      if (localStorage && localStorage.getItem(value)){
+        data = JSON.parse( localStorage.getItem(value) );
+        loop( data );
+      } else {
+        d3.xhr('https://koop.dc.esri.com/github/'+value, function(error, response){
+          d3.select('#legend').style('display', 'block');
+          data = JSON.parse(response.responseText)[0];
+          if (cache) localStorage.setItem(value, JSON.stringify(data));
+          loop( data );
         });
+      }
+    }
+
+    function loop( data ){
+      //d3.select('#count').html( data.features.length + ' features');
+      data.features.forEach(function(f,i){
+        process(f,i);
       });
     }
 
@@ -266,11 +277,12 @@
 
       if (i == data.features.length-1) { 
         d3.select('#progress').html('Complete!');
+        bind();
       }
     }
 
     d3.select('#samples').on('change', function(e, el){
-      load(this.options[this.selectedIndex].value);
+      load(this.options[this.selectedIndex].value, true);
       title = this.options[this.selectedIndex].value;
     });
 
@@ -288,6 +300,7 @@
     }
 
     function clear(){
+      max = 0;
       aggregation = {};
       d3.select('#progress').html('Loading...');
       d3.select('#legend').style('display', 'none');
@@ -305,7 +318,11 @@
             if (!aggregation[r.id]) aggregation[r.id] = 1;
             else aggregation[r.id]++;
 
+            if (aggregation[r.id] > max) max = aggregation[r.id];
+            classify.domain([1, max]);
+
             d3.select('#county_'+r.id)
+              .attr('data-count', aggregation[r.id])
               .attr('data-class', classify( aggregation[r.id] ))
               .attr('class', 'counties counties_'+classify( aggregation[r.id] ).replace(/class/g, '') );
           
@@ -355,12 +372,28 @@
       + "scale(" + .95 / Math.max((-72 - -75) / width, (45 - 40) / height) + ")"
       + "translate(" + -(-72 + -75) / 2 + "," + -(45 - 40) / 2 + ")");*/
     }
-    d3.select('#socket').on('click', doSocket);
 
     function reset() {
       d3.select('.allcounties').transition().duration(750).attr("transform", "");
     }
 
+    d3.select('#socket').on('click', doSocket);
+
+    function bind(){
+      d3.select('#feature-info').style('display', 'block');
+      d3.selectAll('path.counties').on('mouseover', function(){
+        var el = d3.select(this);
+        var cnt = el.attr('data-count');
+        if ( cnt ){
+          //console.log(this);
+          d3.select('#feature-info').html('<h2>'+ el.attr('data-name') +': '+ cnt + '</h2>');
+        } else {
+          d3.select('#feature-info').style('display', 'none');
+        }
+      }).on('mouseout', function(){
+        d3.select('#feature-info').style('display', 'none');
+      });
+    }
 
 
     
