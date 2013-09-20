@@ -13,9 +13,18 @@
     <![endif]-->
     <style>
 
+      body {
+        background: #000;
+        color: #fff;
+      }
+
+      .wrapper: {
+        background: #000;
+      }
+
       path {
         fill: none;
-        stroke: #555;
+        stroke: #aaa;
         stroke-linejoin: round;
         stroke-width:0.5px;
       }
@@ -127,7 +136,7 @@
                 <option value="chelm/geodata/dunkin_donuts">chelm/geodata/dunkin_donuts</option>
                 <option value="benheb/geodata/colorado-rain-totals">benheb/geodata/colorado-rain-totals</option>
               </select>
-              <!--button type="button" class="btn btn-default pull-right" id="socket" style="">WebSocket</button-->
+              <button type="button" class="btn btn-default pull-right" id="socket" style="">WebSocket</button>
             </div>
           </div>
         </header>
@@ -159,7 +168,7 @@
       , width = width - margin.left - margin.right
       , mapRatio = .5
       , height = width * mapRatio
-      , title;
+      , title, ws;
 
     // geo store 
     var CountyGeoStore= new Terraformer.GeoStore({
@@ -234,7 +243,7 @@
       /*svg.append("path")
           .datum(topojson.mesh(us, us.objects.counties, function(a, b) { return a.id !== b.id; }))
           .attr("class", "counties")
-          .attr("d", function(d) {  console.log(d); return path(d); });*/
+          .attr("d", function(d) {  return path(d); });*/
 
     });
 
@@ -300,6 +309,7 @@
     }
 
     function clear(){
+      if (ws) ws.close();
       max = 0;
       aggregation = {};
       d3.select('#progress').html('Loading...');
@@ -314,7 +324,6 @@
       }, function(err, results){
         if (results.length){
           results.forEach(function(r){
-            //console.log('CONTAINS', r.id);
             if (!aggregation[r.id]) aggregation[r.id] = 1;
             else aggregation[r.id]++;
 
@@ -331,7 +340,7 @@
 
       });
 
-      updateFilter( aggregation );
+     // updateFilter( aggregation );
       
     }
 
@@ -350,29 +359,34 @@
       var now = new Date().getTime();
 
       // ws = new WebSocket('ws://geoeventsample3.esri.com:8080/faatrackinfo')
-      var postData = JSON.stringify({"serviceName":"tweets_"+now,"type":"StreamServer","description":"Tweets that mention ... beep boop","extent":{"rings":[[]],"spatialReference":{"wkid":4326}},"spatialReference":{"wkid":4326},"datastore":null,"fields":[{"name":"fid","type":"esriFieldTypeOID","alias":"fid"},{"name":"id","type":"esriFieldTypeInteger","alias":"id"}, {"name":"id_str","type":"esriFieldTypeString","alias":"id_str"},{"name":"user_id_str","type":"esriFieldTypeString","alias":"userid"},{"name":"user_name","type":   "esriFieldTypeString","alias":"user_name"},{"name":"text","type":"esriFieldTypeString","alias":"text"},{"name":"posted_time","type":"esriFieldTypeDate","alias":"posted_time"},     {"name":"created_at","type":"esriFieldTypeString","alias":"created_at"},{"name":"user_friends","type":"esriFieldTypeSmallInteger","alias":"friends"},{"name":"user_followers",      "type":"esriFieldTypeSmallInteger","alias":"followers"},{"name":"retweeted","type":"esriFieldTypeSmallInteger","alias":"retweeted"},{"name":"retweet_count","type":                 "esriFieldTypeSmallInteger","alias":"retweet_count"},{"name":"stream_id","type":"esriFieldTypeString","alias":"stream_id"},{"name":"place_id","type":"esriFieldTypeString","alias": "place_id"},{"name":"place_fullname","type":"esriFieldTypeString","alias":"place_fullname"}],"uniqueIdField":"id","entityIdField":null,"timestampField":"posted_time"});
+      /*var postData = JSON.stringify({"serviceName":"tweets_"+now,"type":"StreamServer","description":"Tweets that mention ... beep boop","extent":{"rings":[[]],"spatialReference":{"wkid":4326}},"spatialReference":{"wkid":4326},"datastore":null,"fields":[{"name":"fid","type":"esriFieldTypeOID","alias":"fid"},{"name":"id","type":"esriFieldTypeInteger","alias":"id"}, {"name":"id_str","type":"esriFieldTypeString","alias":"id_str"},{"name":"user_id_str","type":"esriFieldTypeString","alias":"userid"},{"name":"user_name","type":   "esriFieldTypeString","alias":"user_name"},{"name":"text","type":"esriFieldTypeString","alias":"text"},{"name":"posted_time","type":"esriFieldTypeDate","alias":"posted_time"},     {"name":"created_at","type":"esriFieldTypeString","alias":"created_at"},{"name":"user_friends","type":"esriFieldTypeSmallInteger","alias":"friends"},{"name":"user_followers",      "type":"esriFieldTypeSmallInteger","alias":"followers"},{"name":"retweeted","type":"esriFieldTypeSmallInteger","alias":"retweeted"},{"name":"retweet_count","type":                 "esriFieldTypeSmallInteger","alias":"retweet_count"},{"name":"stream_id","type":"esriFieldTypeString","alias":"stream_id"},{"name":"place_id","type":"esriFieldTypeString","alias": "place_id"},{"name":"place_fullname","type":"esriFieldTypeString","alias":"place_fullname"}],"uniqueIdField":"id","entityIdField":null,"timestampField":"posted_time"});
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState==4) {
           var data = JSON.parse(xmlhttp.responseText);
-          console.log(data.service.webSocketUrl);
           ws = new WebSocket(data.service.webSocketUrl);
           ws.onopen = function(m){
             alert('open');
           };
           ws.onmessage = function(m){
-            console.log('wtf');
           };
         }
-      };
-      xmlhttp.open("POST","http://socialdemo.dc.esri.com/admin/services",true);
-      xmlhttp.setRequestHeader("Content-type","application/json");
-      xmlhttp.send(postData);
+      };*/
+      //xmlhttp.open("POST","http://socialdemo.dc.esri.com/admin/services",true);
+      //xmlhttp.setRequestHeader("Content-type","application/json");
+      //xmlhttp.send(postData);
 
       /*var g = d3.select('.allcounties');
       g.transition().duration(750).attr("transform", "translate(" + projection.translate() + ")"
       + "scale(" + .95 / Math.max((-72 - -75) / width, (45 - 40) / height) + ")"
       + "translate(" + -(-72 + -75) / 2 + "," + -(45 - 40) / 2 + ")");*/
+      
+      ws = new WebSocket( 'ws://geoeventsample3.esri.com:8080/faatrackinfo' );
+      ws.onmessage = function(m){
+        var raw = JSON.parse(m.data)[0];
+        var pnt = {properties: {}, geometry: {coordinates: [raw.geometry.x, raw.geometry.y], type: 'Point'}};
+        aggregatePoint( pnt );
+      };
     }
 
     function reset() {
@@ -387,7 +401,6 @@
         var el = d3.select(this);
         var cnt = el.attr('data-count');
         if ( cnt ){
-          //console.log(this);
           d3.select('#feature-info').html('<h2>'+ el.attr('data-name') +': '+ cnt + '</h2>');
         } else {
           d3.select('#feature-info').style('display', 'none');
