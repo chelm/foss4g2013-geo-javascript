@@ -17,7 +17,7 @@ html
     article
 
       section
-        h1 Javascript is Awesome 
+        h1 Geospatial Javascript 
         h2 Christopher Helm
         h3 FOSS4G 2013
 
@@ -30,11 +30,44 @@ html
         h2 GIS is not dead, it's coming for you and its been drinking Javascript 
 
       section 
-        h1 JS.Geo 2014 
-        h2 The Javascript and Geospatial Conference
+        h1 My Goal 
+        h3 is "GEO FOR ALL" 
+
+      section
+        h1 My Argument
+        h2 The web is central, JS is essential  
+        //- the web is so central to our lives that for GIS to be at all relavent to the masses Javascript, geospatial javascript, must 
 
       section 
-        h1 Talking about the web
+        h2 why is JS missing?
+
+      section 
+        h2 JS has faults  
+        h3 
+          a(href="https://www.destroyallsoftware.com/talks/wat") https://www.destroyallsoftware.com/talks/wat
+
+      section
+        h2 [] + [] ?
+        h2.bullet 
+        h1.bullet Empty String  
+
+      section 
+        h2 [] + {} ?
+        h2.bullet 
+        h1.bullet [object Object]
+
+      section 
+        h2 {} + [] ? 
+        h2.bullet
+        h1.bullet 0
+
+      section 
+        h2 {} + {} ? 
+        h2.bullet 
+        h2.bullet nil
+
+      section 
+        h1 the web
         h2 thinking about how it has evolved 
 
       section 
@@ -43,7 +76,7 @@ html
 
       section 
         h1 Web Evolution
-        h2.bullet technogies are born 
+        h2.bullet new tech is born everyday 
         h2.bullet processing tools 
         h2.bullet data formats
       
@@ -71,7 +104,7 @@ html
       section 
         h2 disseminate ideas 
         h2 share data
-        h2 visualize
+        h1 visualize
 
       section 
         h1 GIS and the web?
@@ -83,6 +116,34 @@ html
         h1 Javascript is central
         h2 leaflet, openlayers, and now d3 (svg)
 
+      section
+        h2 d3 - data driven docs
+        h3 SVG / CSS / HTML
+
+      section
+        h2 "D3 is the new flash..." - Paul Ramsey
+        br
+        img(src="images/pr_tweet.jpeg", width=300)
+
+      section
+        h3 "@Turbo3AA9F 'Look at my very beautiful, screen-filling, one-off, data visualization site.' New instrument, same tune." - Paul Ramsey
+
+
+      section 
+        h2 Freedom for web cartography 
+
+      section
+        h2 Projections
+        h3
+          a(href="https://github.com/mbostock/d3/wiki/Geo-Projections") https://github.com/mbostock/d3/wiki/Geo-Projections
+        h3
+          a(href="http://www.jasondavies.com/maps/transition/") http://www.jasondavies.com/maps/transition/
+
+      section
+        h2 Adaptive Composite Projections
+        h3
+          a( src="http://bl.ocks.org/jczaplew/6603431") http://bl.ocks.org/jczaplew/6603431 
+
         //- define what we think of in terms of "javascript"
         //- but before we talk JS we have to talk about data and its place on the web
 
@@ -93,18 +154,10 @@ html
         h2 data has become pervasive/dynamic
 
       section 
-        h2 network is the bottle neck
-        h3 data delivery?
-
-      section
-        h2 not just how
-        h3 but how much?
-      
-      section 
         h2 we blur the line between client / server 
-        h3.bullets sockets
-        h3.bullets webRTC 
-        h3.bullets RestHooks
+        h3 sockets
+        h3 webRTC 
+        h3 RestHooks
 
       section
         h2 how does GIS adapt?
@@ -112,44 +165,40 @@ html
       section
         h2 ...slowly
 
-      section 
-        h2 ...examples missing 
-        h3 topojson 
-        h3 algorithms? 
-        h3 node.js 
+      section
+        h2 Growing up today?
+        h3 MapServer? or Leafet? or D3?
+
+      section
+        h2 Reality check
+        h2.bullet PostGIS is teh HAWT
 
       section 
-        h2 where is the innovation in Geo? 
-         
-      section  
-        h2 the rise of Javascript
-        h3 the geospatial javascripter
+        h2 What's missing? 
 
       section 
-        h2 viz 
+        h2 topojson
 
       section 
-        h2 journalism 
+        h2 node.js
+
+      section
+        h2 Package Management
+        h3 npm
+        h3 bower
+        h3 yeoman
       
       section 
-        h2 neogeography 
+        h1 in the end
+        h2 "Where is ArcView.js?" - a few people, 2 years ago
 
       section 
-        h1 NodeJS............
-        h2 why node? 
-        h3 concurrent/evented, streaming I/O
-
-      section
-        h1 Summarize 
-
-      section
-        h2 our problems have not 
+        h1 JS.Geo San Francisco 2014 
+        h2 The Javascript + Geo festival of love conference
 
       section 
-        h2 our problems have not gotten easier
-
-      section 
-        h1 Demos 
+        h1 Demo stuff
+        //-img(src="images/apollorockygif1.gif")
 
       section 
         h2 Cost Distance
@@ -162,77 +211,9 @@ html
         h3 
           a(href="https://github.com/calvinmetcalf/shapefile-js") https://github.com/calvinmetcalf/shapefile-js
 
-
-      section 
-        h2 d3 - data driven docs
-        h3 SVG / CSS / HTML 
-
-      section
-        h2 Projections 
-        h3 
-          a(href="http://www.jasondavies.com/maps/transition/") http://www.jasondavies.com/maps/transition/
-
-      section 
-        h2 Adaptive Composite Projections 
-        h3 
-          a( src="http://bl.ocks.org/jczaplew/6603431") http://bl.ocks.org/jczaplew/6603431
-  
-      section
-        h2 "D3 is the new flash..." - Paul Ramsey
-        br
-        img(src="images/pr_tweet.jpeg", width=300)
-      
-      section 
-        h3 "@Turbo3AA9F 'Look at my very beautiful, screen-filling, one-off, data visualization site.' New instrument, same tune." - Paul Ramsey
-
-      section 
-        h2 Growing up today? 
-        h3 MapServer? or Leafet? or D3?  
-
-      section
-        h2 Reality check
-        h2.bullet PostGIS is teh HAWT 
-      
-      section 
-        h2 Javascript as a language
-
-      section 
-        h2 WAT
-
-      section 
-        h2 [] + {} 
-
-      section 
-        h2 {} + []
-    
-      section 
-        h2 Array(20)
-
-      section 
-        h2 Node.js
-        h3 streaming 
-        h3 concurrent 
-        h3 flexible 
-
-      section 
-        h2 Package Management 
-        h3 npm 
-        h3 bower 
-        h3 yeoman
-
-      section 
-        h2 micro js  
-
-      section
-        h2 GIS and Javascript 
-        h3 demos and stuff
-
-      section 
-        h2 "Where is ArcView.js?" - a few people, 2 years ago
-
       section 
         h2 JSTS 
-        h3 A JS port JTS/GEOS
+        h3 A JS port of JTS/GEOS
         h3
           a(href="https://github.com/bjornharrtell/jsts") https://github.com/bjornharrtell/jsts 
 
@@ -245,12 +226,16 @@ html
         h2
           a(href="https://github.com/esri/koop") Esri/koop
         h3 an open proxy to geo data on github
-        img(src="https://f.cloud.github.com/assets/351164/864572/24113276-f624-11e2-831d-50cf8395b200.png")
+        img(src="https://f.cloud.github.com/assets/351164/864572/24113276-f624-11e2-831d-50cf8395b200.png", width=350)
 
       section 
-        h2 Rtree.js
-        h3 
-          a(href="https://github.com/imbcmdth/RTree") https://github.com/imbcmdth/RTree
+        h2 
+          a( href="https://github.com/chelm/geodata/blob/master/dunkin_donuts.geojson") Dunkin Donuts
+
+      //-section 
+      //-  h2 Rtree.js
+      //-  h3 
+      //-    a(href="https://github.com/imbcmdth/RTree") https://github.com/imbcmdth/RTree
 
       section 
         h2 Terraformer
