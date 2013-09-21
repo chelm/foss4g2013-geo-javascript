@@ -8,6 +8,10 @@ slideConfig = [
 
 ];
 
+//slideConfig[10] = {css: {background: 'none', color: '#fff'}, img: 'images/chimp_dog.gif'};
+slideConfig[35] = {css: {background: 'none', color: '#fff'}, img: 'images/kitty1.gif'};
+slideConfig[44] = {css: {background: 'none', color: '#fff'}, img: 'images/apollorockygif1.gif'};
+
 function update(e){
   var config = slideConfig[ e.index ];
 
@@ -31,6 +35,10 @@ function update(e){
       $('.credit').html('');
     }
 
+  } else {
+     var el = $('.bespoke-parent');
+     el.css("background", '');
+     $('.credit').html('');
   }
 
 }
