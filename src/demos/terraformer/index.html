@@ -396,17 +396,17 @@
     d3.select('#socket').on('click', doSocket);
 
     function bind(){
-      d3.select('#feature-info').style('display', 'block');
+      //d3.select('#feature-info').style('display', 'block');
       d3.selectAll('path.counties').on('mouseover', function(){
         var el = d3.select(this);
         var cnt = el.attr('data-count');
         if ( cnt ){
-          d3.select('#feature-info').html('<h2>'+ el.attr('data-name') +': '+ cnt + '</h2>');
+          //d3.select('#feature-info').html('<h2>'+ el.attr('data-name') +': '+ cnt + '</h2>');
         } else {
-          d3.select('#feature-info').style('display', 'none');
+          //d3.select('#feature-info').style('display', 'none');
         }
       }).on('mouseout', function(){
-        d3.select('#feature-info').style('display', 'none');
+        //d3.select('#feature-info').style('display', 'none');
       });
     }
 
